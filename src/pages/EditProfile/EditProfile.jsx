@@ -51,58 +51,50 @@ const EditProfile = () => {
 
 
   useEffect(() => {
-  const loadProfile = async () => {
-    try {
-      setLoadingUser(true);
-      const res = await getMyProfileAPI();
-      console.log("🔥 Profile API result:", res.result);
-console.log("🔥 Avatar URL nhận được từ BE:", res.result?.avatarUrl);
-
-      if (res?.code === 1000) {
-        const p = res.result || {};
-
-        form.setFieldsValue({
-          firstName: p.firstName || "",
-          lastName: p.lastName || "",
-          email: p.email || "",
-          phone: p.phone || "",
-          address: p.address || "",
-          dob: p.dob ? dayjs(p.dob) : null,
-          educations: p.educations?.length ? p.educations : [{}],
-          experiences: (p.experiences || []).map(e => ({
+    const loadProfile = async () => {
+      try {
+        setLoadingUser(true);
+        const res = await getMyProfileAPI();
+        console.log("Profile response:", res.result);
+        if (res?.code === 1000) {
+          const p = res.result || {};
+          // Map ngày → dayjs cho DatePicker
+          const experiences = (p.experiences || []).map((e) => ({
             ...e,
             startDate: e.startDate ? dayjs(e.startDate) : null,
             endDate: e.endDate ? dayjs(e.endDate) : null,
-          })),
-        });
+          }));
 
-        //  Format URL nếu cần
-        const formattedAvatar = p.avatarUrl?.startsWith("http")
-          ? p.avatarUrl
-          : p.avatarUrl
-          ? `http://localhost:8080${p.avatarUrl}`
-          : "";
+          // Đổ form
+          form.setFieldsValue({
+            firstName: p.firstName || "",
+            lastName: p.lastName || "",
+            email: p.email || "",
+            phone: p.phone || "",
+            address: p.address || "",
+            dob: p.dob ? dayjs(p.dob) : null,
+            educations: p.educations && p.educations.length ? p.educations : [{}],
+            experiences: experiences.length ? experiences : [{}],
+          });
 
-        setImageUrl(formattedAvatar);
-        setImageKey(Date.now());
+          setImageUrl(p.avatarUrl || "");
+          console.log("✅ Image URL set to:", p.avatarUrl);
+          setImageKey(Date.now());
 
-        // Đồng bộ Redux để toàn bộ app có avatar
-        dispatch(setUser({
-          ...user,
-          ...p,
-          fullName: `${p.firstName || ""} ${p.lastName || ""}`.trim(),
-          avatarUrl: formattedAvatar,
-        }));
+          // (tuỳ) đồng bộ Redux user “cơ bản”
+          // dispatch(setUser({ ...user, ...p, fullName: `${p.firstName || ""} ${p.lastName || ""}`.trim() }));
+        } else {
+          message.error(res?.message || "Không lấy được hồ sơ");
+        }
+      } catch (err) {
+        console.error(err);
+        message.error("Không lấy được hồ sơ");
+      } finally {
+        setLoadingUser(false);
       }
-    } catch (e) {
-      message.error("Không lấy được hồ sơ");
-    } finally {
-      setLoadingUser(false);
-    }
-  };
-  loadProfile();
-}, []);
-
+    };
+    loadProfile();
+  }, []);
 
 
   useEffect(() => {
@@ -145,6 +137,41 @@ console.log("🔥 Avatar URL nhận được từ BE:", res.result?.avatarUrl);
     }
     return false;
 };
+  // Handle form submission
+  // const handleSubmit = async (values) => {
+  //   if (!user?.id) {
+  //   message.error("Không thể cập nhật vì thiếu ID người dùng");
+  //   return;
+  // }
+  //   setLoading(true);
+  //   try {
+  //     const updatePayload = {
+  //       ...values,
+  //       avatarUrl: imageUrl
+  //     };
+
+  //     const response = await updateUserAPI(user.id, updatePayload);
+  //     console.log("Update user response:", response);
+      
+  //     if (response.code === 1000) {
+  //       // Update Redux store
+  //       dispatch(setUser({
+  //         ...user,
+  //         ...updatePayload,
+  //         fullName: `${values.firstName} ${values.lastName}`
+  //       }));
+        
+  //       message.success("Cập nhật thông tin thành công!");
+  //       navigate(-1); // Go back to previous page
+  //     } else {
+  //       message.error("Cập nhật thông tin thất bại!");
+  //     }
+  //   } catch (error) {
+  //     message.error("Cập nhật thông tin thất bại!");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
    const handleSubmit = async (values) => {
     setLoading(true);
@@ -354,7 +381,7 @@ return (
                                     {...rest}
                                     name={[name, "school"]}
                                     label="Trường học"
-                                    rules={[{  message: "Nhập tên trường" }]}
+                                    rules={[{ required: true, message: "Nhập tên trường" }]}
                                   >
                                     <Input />
                                   </Form.Item>
@@ -414,7 +441,7 @@ return (
                                     {...rest}
                                     name={[name, "company"]}
                                     label="Công ty / Doanh nghiệp"
-                                    rules={[{ message: "Nhập tên công ty" }]}
+                                    rules={[{ required: true, message: "Nhập tên công ty" }]}
                                   >
                                     <Input />
                                   </Form.Item>
@@ -455,6 +482,57 @@ return (
                       )}
                     </Form.List>
                   </TabPane>
+                  <TabPane tab="Nâng cấp tài khoản" key="4">
+  <Row gutter={24}>
+    <Col xs={24} md={12}>
+      <Card
+        title="Premium"
+        style={{ backgroundColor: "#f0f5ff", borderRadius: 12 }}
+      >
+        <Title level={3} style={{ color: "#1d39c4" }}>
+          49.000đ/tháng
+        </Title>
+        <p>Dành cho sinh viên muốn tăng khả năng hiển thị hồ sơ...</p>
+        <ul>
+          <li>🔹 Đề xuất theo năng lực & khung giờ rảnh</li>
+          <li>🔹 Ưu tiên hiển thị hồ sơ</li>
+          <li>🔹 Nhắn tin trực tiếp với nhà tài trợ</li>
+          <li>🔹 Báo cáo hiệu quả & phân tích dự án</li>
+        </ul>
+        <Button type="primary" size="large" block style={{ marginTop: 12 }}>
+          Đăng ký ngay
+        </Button>
+      </Card>
+    </Col>
+
+    <Col xs={24} md={12}>
+      <Card
+        title="Career Pro Plan"
+        style={{ backgroundColor: "#d6e4ff", borderRadius: 12 }}
+      >
+        <Title level={3} style={{ color: "#10239e" }}>
+          99.000đ/tháng
+        </Title>
+        <p>Dành cho sinh viên nghiêm túc đầu tư vào sự nghiệp...</p>
+        <ul>
+          <li>✅ Phân tích hiệu suất ứng tuyển</li>
+          <li>✅ CV review định kỳ (AI hoặc mentor)</li>
+          <li>✅ Gợi ý lộ trình nghề nghiệp</li>
+          <li>✅ Khóa học kỹ năng mềm tích hợp</li>
+        </ul>
+        <Button
+          type="primary"
+          size="large"
+          block
+          style={{ marginTop: 12, backgroundColor: "#1d39c4" }}
+        >
+          Đăng ký ngay
+        </Button>
+      </Card>
+    </Col>
+  </Row>
+</TabPane>
+
                 </Tabs>
                 <Form.Item className="form-buttons" style={{ marginTop: 24 }}>
                   <Button onClick={() => navigate("/change-password")} size="large" style={{ marginRight: 16 }}>

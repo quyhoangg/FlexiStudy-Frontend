@@ -48,6 +48,7 @@ import PaymentSuccessPage from "./pages/Payment/PaymentSuccessPage";
 import PaymentATMPage from "./pages/Payment/PaymentATMPage";
 import VerifyCompany from "./pages/VerifyCompany/VerifyCompany";
 import ApplicationRecruiter from "./pages/ApplicationRecruiter/ApplicationRecruiter";
+import ChatbotPage from "./pages/ChatBot/ChatbotPage";
 
 const route = createBrowserRouter([
   {
@@ -76,6 +77,7 @@ const route = createBrowserRouter([
           { path: "/payment/success", element: <PaymentSuccessPage /> },
           { path: "/payment/cancel", element: <PaymentPage /> },
           { path: "/payment/atm", element: <PaymentATMPage /> },
+          { path: "chat", element: <ChatbotPage /> },
         ],
       },
     ],

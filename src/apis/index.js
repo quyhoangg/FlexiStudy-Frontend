@@ -490,3 +490,9 @@ export const matchJobsAPI = async () => {
   });
   return res.data;
 };
+
+// - Chatbot API -
+export const chatAPI = async (prompt) => {
+  const res = await api.post("/chat", { prompt });
+  return res.data;
+};

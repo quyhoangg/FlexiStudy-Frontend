@@ -24,6 +24,7 @@ import banner_home from "../../assets/img/banner12.jpg";
 import { getAllJobsAPI, getJobCategoriesAPI } from "../../apis";
 import { useNavigate, Link } from "react-router-dom";
 import dayjs from "dayjs";
+import ChatbotPage from "../ChatBot/ChatbotPage";
 
 const { Title, Text, Paragraph } = Typography;
 const { TabPane } = Tabs;
@@ -100,6 +101,7 @@ const JobCard = ({ job, onClick }) => {
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Shared config
   const pageSize = 8;
@@ -436,6 +438,29 @@ const fetchUrgentJobs = async () => {
           </div>
         </div>
       </section>
+      <button
+        className="chatbot-button"
+        onClick={() => setIsChatOpen(true)}
+        title="Chat với AI Assistant"
+      >
+        💬
+      </button>
+
+      {isChatOpen && (
+        <div className="chat-modal-overlay" onClick={() => setIsChatOpen(false)}>
+          <div className="chat-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="chat-header">
+              <h3>FlexiStudy Assistant</h3>
+              <button onClick={() => setIsChatOpen(false)}>✕</button>
+            </div>
+
+            {/* ✅ Thêm phần bọc nội dung chatbot */}
+            <div className="chat-body">
+              <ChatbotPage />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
